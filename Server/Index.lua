@@ -12,6 +12,7 @@ end
 
 function FilterMessage(message)
 	message = message:gsub("@", "")
+	return message
 end
 
 -- Send Message method
