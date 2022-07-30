@@ -35,4 +35,4 @@ end)
 
 -- Output Success
 Package.Log("Loaded Discord Configuration successfuly.")
-SendDiscordMessage("Server started!")	
+SendDiscordMessage("Server started!")
