@@ -10,21 +10,13 @@ if (not DISCORD_WEBOOK_ID or not DISCORD_WEBOOK_TOKEN or DISCORD_WEBOOK_ID == ""
     return
 end
 
-function FilterMessage(message)
-	message = message:gsub("@", "")
-	return message
-end
-
 -- Send Message method
 function SendDiscordMessage(message)
-	-- Filter bad words
-	message = FilterMessage(message)
-
 	HTTP.Request(
 		"https://discord.com",
 		"/api/webhooks/" .. DISCORD_WEBOOK_ID .. "/" .. DISCORD_WEBOOK_TOKEN,
 		"POST",
-		'{"content": "' .. message .. '"}'
+		'{"allowed_mentions":{"parse":[]},"content":"' .. message .. '"}'
 	)
 end
 
@@ -43,4 +35,4 @@ end)
 
 -- Output Success
 Package.Log("Loaded Discord Configuration successfuly.")
-SendDiscordMessage("Server started!")
+SendDiscordMessage("Server started!")	
