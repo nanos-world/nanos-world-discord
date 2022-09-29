@@ -20,6 +20,16 @@ function SendDiscordMessage(message)
 	)
 end
 
+-- Send Embed Message method
+function SendDiscordEmbed(tEmbed)
+	HTTP.Request(
+		"https://discord.com",
+		"/api/webhooks/" .. DISCORD_WEBOOK_ID .. "/" .. DISCORD_WEBOOK_TOKEN,
+		"POST",
+                '{"embeds":[' .. JSON.stringify(tEmbed) .. '], "allowed_mentions":{"parse":[]}}'   
+	)
+end
+
 -- Events intercept to print on Discord
 Server.Subscribe("Chat", function(text, player)
 	SendDiscordMessage("**" .. player:GetName() .. "**: " .. text)
