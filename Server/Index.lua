@@ -1,11 +1,11 @@
 PERSISTENT_DATA = Package.GetPersistentData()
 
 -- Parses Configuration
-DISCORD_WEBOOK_ID = PERSISTENT_DATA.DISCORD_WEBOOK_ID
-DISCORD_WEBOOK_TOKEN = PERSISTENT_DATA.DISCORD_WEBOOK_TOKEN
+DISCORD_WEBHOOK_ID = PERSISTENT_DATA.DISCORD_WEBHOOK_ID
+DISCORD_WEBHOOK_TOKEN = PERSISTENT_DATA.DISCORD_WEBHOOK_TOKEN
 
 -- Verify Configuration
-if (not DISCORD_WEBOOK_ID or not DISCORD_WEBOOK_TOKEN or DISCORD_WEBOOK_ID == "" or DISCORD_WEBOOK_TOKEN == "") then
+if (not DISCORD_WEBHOOK_ID or not DISCORD_WEBHOOK_TOKEN or DISCORD_WEBHOOK_ID == "" or DISCORD_WEBHOOK_TOKEN == "") then
 	Package.Error("Failed loading Discord Webhook ID or Token")
     return
 end
@@ -14,7 +14,7 @@ end
 function SendDiscordMessage(message)
 	HTTP.Request(
 		"https://discord.com",
-		"/api/webhooks/" .. DISCORD_WEBOOK_ID .. "/" .. DISCORD_WEBOOK_TOKEN,
+		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
 		"POST",
 		'{"allowed_mentions":{"parse":[]},"content":"' .. message .. '"}'
 	)
@@ -24,7 +24,7 @@ end
 function SendDiscordEmbed(tEmbed)
 	HTTP.Request(
 		"https://discord.com",
-		"/api/webhooks/" .. DISCORD_WEBOOK_ID .. "/" .. DISCORD_WEBOOK_TOKEN,
+		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
 		"POST",
                 '{"embeds":[' .. JSON.stringify(tEmbed) .. '], "allowed_mentions":{"parse":[]}}'   
 	)
