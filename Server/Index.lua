@@ -6,13 +6,13 @@ DISCORD_WEBHOOK_TOKEN = PERSISTENT_DATA.DISCORD_WEBHOOK_TOKEN
 
 -- Verify Configuration
 if (not DISCORD_WEBHOOK_ID or not DISCORD_WEBHOOK_TOKEN or DISCORD_WEBHOOK_ID == "" or DISCORD_WEBHOOK_TOKEN == "") then
-	Package.Error("Failed loading Discord Webhook ID or Token")
-    return
+	Console.Error("Failed loading Discord Webhook ID or Token")
+	return
 end
 
 -- Send Message method
 function SendDiscordMessage(message)
-	HTTP.Request(
+	HTTP.RequestAsync(
 		"https://discord.com",
 		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
 		"POST",
@@ -22,11 +22,11 @@ end
 
 -- Send Embed Message method
 function SendDiscordEmbed(tEmbed)
-	HTTP.Request(
+	HTTP.RequestAsync(
 		"https://discord.com",
 		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
 		"POST",
-                '{"embeds":[' .. JSON.stringify(tEmbed) .. '], "allowed_mentions":{"parse":[]}}'   
+		'{"embeds":[' .. JSON.stringify(tEmbed) .. '], "allowed_mentions":{"parse":[]}}'
 	)
 end
 
@@ -44,5 +44,5 @@ Player.Subscribe("Destroy", function(player)
 end)
 
 -- Output Success
-Package.Log("Loaded Discord Configuration successfuly.")
+Console.Log("Loaded Discord Configuration successfuly.")
 SendDiscordMessage("Server started!")
