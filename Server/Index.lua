@@ -31,7 +31,7 @@ function SendDiscordEmbed(tEmbed)
 end
 
 -- Events intercept to print on Discord
-Server.Subscribe("Chat", function(text, player)
+Chat.Subscribe("PlayerSubmit", function(text, player)
 	SendDiscordMessage("**" .. player:GetName() .. "**: " .. text)
 end)
 
