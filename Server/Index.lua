@@ -11,28 +11,42 @@ if (not DISCORD_WEBHOOK_ID or not DISCORD_WEBHOOK_TOKEN or DISCORD_WEBHOOK_ID ==
 end
 
 -- Send Message method
-function SendDiscordMessage(message)
-	HTTP.RequestAsync(
-		"https://discord.com",
-		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
-		"POST",
-		'{"allowed_mentions":{"parse":[]},"content":"' .. message .. '"}'
-	)
-end
+function SendDiscordMessage(content, embed, username, avatar_url)
+	local data = {allowed_mentions = {parse = {}}, username = username, avatar_url = avatar_url, content = content}
 
--- Send Embed Message method
-function SendDiscordEmbed(tEmbed)
-	HTTP.RequestAsync(
-		"https://discord.com",
-		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
-		"POST",
-		'{"embeds":[' .. JSON.stringify(tEmbed) .. '], "allowed_mentions":{"parse":[]}}'
-	)
+    	if embed ~= nil then
+        	data['embeds'] = {JSON.parse(JSON.stringify(embed))}
+    	end
+
+    	HTTP.RequestAsync(
+        	"https://discord.com",
+        	"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
+        	"POST",
+        	JSON.stringify(data)
+    	)
 end
 
 -- Events intercept to print on Discord
 Chat.Subscribe("PlayerSubmit", function(text, player)
-	SendDiscordMessage("**" .. player:GetName() .. "**: " .. text)
+	local steamid = player:GetSteamID()
+	local chat_cache = Server.GetValue("discord_chat", {})
+
+	if (chat_cache[steamid]) then
+		SendDiscordMessage("**" .. player:GetName() .. "**: " .. text, nil, player:GetName(), chat_cache[steamid])
+		return
+	end
+
+	local function sendMessage(_, content)
+		-- Get avatar url
+		local avatar_url = content:match("<avatarFull><!%[CDATA%[(.-)%]%]></avatarFull>")
+		SendDiscordMessage("**" .. player:GetName() .. "**: " .. text, nil, player:GetName(), avatar_url)
+
+		-- Cache avatar url
+		chat_cache[steamid] = avatar_url
+		Server.SetValue("discord_chat", chat_cache)
+	end
+	-- Request to get the profile data
+	HTTP.RequestAsync("https://steamcommunity.com", '/profiles/' .. player:GetSteamID() .. '/?xml=1', "GET", nil, nil, nil, nil, sendMessage)
 end)
 
 Player.Subscribe("Spawn", function(player)
@@ -41,6 +55,13 @@ end)
 
 Player.Subscribe("Destroy", function(player)
 	SendDiscordMessage(player:GetName() .. " has left the server")
+
+	-- Remove from cache the profile avatar if exists
+	local chat_cache = Server.GetValue("discord_chat", {})
+	if (chat_cache[player:GetSteamID()]) then
+		chat_cache[player:GetSteamID()] = nil
+		Server.SetValue("discord_chat", chat_cache)
+	end
 end)
 
 -- Output Success
