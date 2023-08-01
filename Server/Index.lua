@@ -32,7 +32,7 @@ Chat.Subscribe("PlayerSubmit", function(text, player)
 	local chat_cache = player:GetValue("discord::profile")
 
 	if chat_cache then
-		SendDiscordMessage("**" .. player:GetName() .. "**: " .. text, nil, player:GetName(), chat_cache[steamid])
+		SendDiscordMessage("**" .. player:GetName() .. "**: " .. text, nil, player:GetName(), chat_cache)
 		return
 	end
 
