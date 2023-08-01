@@ -29,9 +29,9 @@ end
 -- Events intercept to print on Discord
 Chat.Subscribe("PlayerSubmit", function(text, player)
 	local steamid = player:GetSteamID()
-	local chat_cache = Server.GetValue("discord_chat", {})
+	local chat_cache = player:GetValue("discord::profile")
 
-	if (chat_cache[steamid]) then
+	if chat_cache then
 		SendDiscordMessage("**" .. player:GetName() .. "**: " .. text, nil, player:GetName(), chat_cache[steamid])
 		return
 	end
@@ -42,8 +42,7 @@ Chat.Subscribe("PlayerSubmit", function(text, player)
 		SendDiscordMessage("**" .. player:GetName() .. "**: " .. text, nil, player:GetName(), avatar_url)
 
 		-- Cache avatar url
-		chat_cache[steamid] = avatar_url
-		Server.SetValue("discord_chat", chat_cache)
+		player:SetValue("discord::profile", avatar_url)
 	end
 	-- Request to get the profile data
 	HTTP.RequestAsync("https://steamcommunity.com", '/profiles/' .. player:GetSteamID() .. '/?xml=1', "GET", nil, nil, nil, nil, sendMessage)
@@ -55,13 +54,6 @@ end)
 
 Player.Subscribe("Destroy", function(player)
 	SendDiscordMessage(player:GetName() .. " has left the server")
-
-	-- Remove from cache the profile avatar if exists
-	local chat_cache = Server.GetValue("discord_chat", {})
-	if (chat_cache[player:GetSteamID()]) then
-		chat_cache[player:GetSteamID()] = nil
-		Server.SetValue("discord_chat", chat_cache)
-	end
 end)
 
 -- Output Success
