@@ -40,7 +40,7 @@ function SendDiscordMessage(message)
 	HTTP.RequestAsync(
 		"https://discord.com",
 		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
-		"POST",
+		HTTPMethod.POST,
 		JSON.stringify(data)
 	)
 end
@@ -52,7 +52,7 @@ function SendDiscordMessageImpersonating(content, username, avatar_url)
 	HTTP.RequestAsync(
 		"https://discord.com",
 		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
-		"POST",
+		HTTPMethod.POST,
 		JSON.stringify(data)
 	)
 end
@@ -69,7 +69,7 @@ Chat.Subscribe("PlayerSubmit", function(text, player)
 		end
 
 		-- Request to get the profile data
-		HTTP.RequestAsync("https://steamcommunity.com", '/profiles/' .. player:GetSteamID() .. '/?xml=1', "GET", "", "application/json", false, {}, function(status, content)
+		HTTP.RequestAsync("https://steamcommunity.com", '/profiles/' .. player:GetSteamID() .. '/?xml=1', HTTPMethod.GET, "", "application/json", false, {}, function(status, content)
 			-- Checks if profile is public and was able to get the avatar
 			if (status == 200) then
 				-- Get avatar url
