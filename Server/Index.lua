@@ -1,37 +1,48 @@
-PERSISTENT_DATA = Package.GetPersistentData()
+DiscordIntegration = {
+	webhook_id = "",
+	webhook_token = "",
+	use_bot_impersonation = true
+}
 
--- Parses Configuration
-DISCORD_WEBHOOK_ID = PERSISTENT_DATA.DISCORD_WEBHOOK_ID
-DISCORD_WEBHOOK_TOKEN = PERSISTENT_DATA.DISCORD_WEBHOOK_TOKEN
-DISCORD_USE_BOT_IMPERSONATION = PERSISTENT_DATA.DISCORD_USE_BOT_IMPERSONATION
+Package.Subscribe("Load", function()
+	-- Try getting from persistent data
+	local persistent_data = Package.GetPersistentData()
+	DiscordIntegration.webhook_id = persistent_data.discord_webhook_id
+	DiscordIntegration.webhook_token = persistent_data.discord_webhook_token
+	DiscordIntegration.use_bot_impersonation = persistent_data.discord_use_bot_impersonation
 
--- Verify Configuration
-if (
-	not DISCORD_WEBHOOK_ID or DISCORD_WEBHOOK_ID == "" or
-	not DISCORD_WEBHOOK_TOKEN or DISCORD_WEBHOOK_TOKEN == ""
-) then
-	Console.Error("Failed loading Discord Webhook ID or Token, please configure it properly in Packages/.data/discord.toml")
-
-	-- Sets empty value so the file is created
-	if (not DISCORD_WEBHOOK_ID) then
-		Package.SetPersistentData("DISCORD_WEBHOOK_ID", "")
+	-- Try getting from custom settings (overrides persistent data)
+	local server_custom_settings = Server.GetCustomSettings()
+	if (server_custom_settings.discord_webhook_id) then
+		DiscordIntegration.webhook_id = server_custom_settings.discord_webhook_id
+		Package.SetPersistentData("discord_webhook_id", DiscordIntegration.webhook_id)
 	end
 
-	if (not DISCORD_WEBHOOK_TOKEN) then
-		Package.SetPersistentData("DISCORD_WEBHOOK_TOKEN", "")
+	if (server_custom_settings.discord_webhook_token) then
+		DiscordIntegration.webhook_token = server_custom_settings.discord_webhook_token
+		Package.SetPersistentData("discord_webhook_token", DiscordIntegration.webhook_token)
+	end
+
+	if (server_custom_settings.discord_use_bot_impersonation ~= nil) then
+		DiscordIntegration.use_bot_impersonation = server_custom_settings.discord_use_bot_impersonation
+		Package.SetPersistentData("discord_use_bot_impersonation", DiscordIntegration.use_bot_impersonation)
 	end
 
 	-- Flushes so the file is created immediately
 	Package.FlushSetPersistentData()
 
-	return
-end
+	if (
+		not DiscordIntegration.webhook_id or DiscordIntegration.webhook_id == "" or
+		not DiscordIntegration.webhook_token or DiscordIntegration.webhook_token == ""
+	) then
+		Console.Error("Failed loading Discord Webhook ID or Token, please configure it properly in 'Packages/.data/discord.toml' or pass it via custom settings like --custom_settings\"discord_webhook_id='X', discord_webhook_token='Y'\"")
+		return
+	end
 
--- Defaults DISCORD_USE_BOT_IMPERSONATION to true
-if (DISCORD_USE_BOT_IMPERSONATION == nil) then
-	Package.SetPersistentData("DISCORD_USE_BOT_IMPERSONATION", true)
-	DISCORD_USE_BOT_IMPERSONATION = true
-end
+	-- Output Success
+	Console.Log("Loaded Discord Integration successfully.")
+	SendDiscordMessage("Server started!")
+end)
 
 -- Send Message
 function SendDiscordMessage(message)
@@ -39,7 +50,7 @@ function SendDiscordMessage(message)
 
 	HTTP.RequestAsync(
 		"https://discord.com",
-		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
+		"/api/webhooks/" .. DiscordIntegration.webhook_id .. "/" .. DiscordIntegration.webhook_token,
 		HTTPMethod.POST,
 		JSON.stringify(data)
 	)
@@ -51,7 +62,7 @@ function SendDiscordMessageImpersonating(content, username, avatar_url)
 
 	HTTP.RequestAsync(
 		"https://discord.com",
-		"/api/webhooks/" .. DISCORD_WEBHOOK_ID .. "/" .. DISCORD_WEBHOOK_TOKEN,
+		"/api/webhooks/" .. DiscordIntegration.webhook_id .. "/" .. DiscordIntegration.webhook_token,
 		HTTPMethod.POST,
 		JSON.stringify(data)
 	)
@@ -60,7 +71,7 @@ end
 -- Events intercept to print on Discord
 Chat.Subscribe("PlayerSubmit", function(text, player)
 	-- If using impersonation, then gets player avatar
-	if (DISCORD_USE_BOT_IMPERSONATION) then
+	if (DiscordIntegration.use_bot_impersonation) then
 		local chat_cache = player:GetValue("discord::profile")
 
 		if (chat_cache ~= nil) then
@@ -95,7 +106,3 @@ end)
 Player.Subscribe("Destroy", function(player)
 	SendDiscordMessage(player:GetName() .. " has left the server")
 end)
-
--- Output Success
-Console.Log("Loaded Discord Configuration successfuly.")
-SendDiscordMessage("Server started!")
