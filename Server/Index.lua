@@ -29,7 +29,7 @@ Package.Subscribe("Load", function()
 	end
 
 	-- Flushes so the file is created immediately
-	Package.FlushSetPersistentData()
+	Package.FlushPersistentData()
 
 	if (
 		not DiscordIntegration.webhook_id or DiscordIntegration.webhook_id == "" or
@@ -46,7 +46,7 @@ end)
 
 -- Send Message
 function SendDiscordMessage(message)
-	local data = { allowed_mentions = { parse = {} }, content = message }
+	local data = { allowed_mentions = { parse = {} }, content = message, flags = 4 }
 
 	HTTP.RequestAsync(
 		"https://discord.com",
@@ -58,7 +58,7 @@ end
 
 -- Send Message (impersonating with avatar and username)
 function SendDiscordMessageImpersonating(content, username, avatar_url)
-	local data = { allowed_mentions = { parse = {} }, username = username, avatar_url = avatar_url and avatar_url or nil, content = content }
+	local data = { allowed_mentions = { parse = {} }, username = username, avatar_url = avatar_url and avatar_url or nil, content = content, flags = 4 }
 
 	HTTP.RequestAsync(
 		"https://discord.com",
