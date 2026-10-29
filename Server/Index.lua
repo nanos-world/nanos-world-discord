@@ -41,6 +41,9 @@ Package.Subscribe("Load", function()
 
 	-- Output Success
 	Console.Log("Loaded Discord Integration successfully.")
+end)
+
+Server.Subscribe("Start", function()
 	SendDiscordMessage("Server started!")
 end)
 
